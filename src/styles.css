@@ -1,3 +1,11 @@
 /* You can add global styles to this file, and also import other style files */
 
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=National+Park:wght@200..800&family=Viga&display=swap');
+@import 'tailwindcss';
+@plugin "daisyui" {
+  themes: dark --default;
+}
+@theme {
+  --font-viga: 'Viga', sans-serif;
+  --font-sans: 'National Park', sans-serif;
+}
