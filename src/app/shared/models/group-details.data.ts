@@ -1,5 +1,5 @@
 export interface GroupDetailsData {
-  groupDetails: GroupDetailsData
+  groupDetails: GroupDetails
   members: Member[];
 }
 
@@ -16,7 +16,13 @@ export interface GroupDetails {
 export interface Member {
   createdTs: string | undefined;
   groupId: string | undefined;
+  id: string | undefined;
   name: string | undefined;
   removedTs: string | null | undefined;
   status: string | undefined;
+}
+
+export interface User {
+  name: string;
+  id: string;
 }

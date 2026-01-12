@@ -1,1 +1,12 @@
-<p>dashboard works!</p>
+<div>
+  <div>Expenses</div>
+  <div>Settlements</div>
+  <div>History</div>
+  <div>Settings</div>
+</div>
+<div>
+  @if (expenses.length > 0) {
+  } @else {
+    <div>{{ groupDetails.name }} has no expenses.</div>
+  }
+</div>

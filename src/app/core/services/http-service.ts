@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment.development';
 import { GroupDetailsData } from '../../shared/models/group-details.data';
 import { Observable } from 'rxjs';
+import { ExpenseData, ExpensePayload } from '../../shared/models/expense.data';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +17,23 @@ export class HttpService {
   private MEMBER_API: string = 'api/member'
 
   createGroup(payload: any): Observable<GroupDetailsData> {
-    return this.http.get<GroupDetailsData>(`${this.BASE_URL}/${this.GROUP_API}/create`)
+    return this.http.post<GroupDetailsData>(`/${this.GROUP_API}/create`, payload)
+  }
+
+  getGroupDetails(token: string, includeMembers: boolean): Observable<GroupDetailsData> {
+    return this.http.get<GroupDetailsData>(`/${this.GROUP_API}/${token}?includeMembers=${includeMembers}`)
+  }
+
+  getGroupExpenses(groupId: string): Observable<ExpenseData[]> {
+    return this.http.get<ExpenseData[]>(`${this.GROUP_API}/${groupId}/expenses`)
+  }
+
+  createExpense(payload: ExpensePayload, groupId: string, actorId: string): Observable<ExpenseData> {
+    return this.http.post<ExpenseData>(`${this.EXPENSE_API}/create`, payload, {
+      headers: {
+        'X-Group-Id': groupId,
+        'X-Actor-Id': actorId
+      }
+    })
   }
 }

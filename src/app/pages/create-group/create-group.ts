@@ -4,6 +4,8 @@ import { LocalStorageService } from '../../core/services/local-storage-service';
 import { HttpService } from '../../core/services/http-service';
 import { UserSelect } from '../../feature/group/user-select/user-select';
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
+import { GroupDetailsData, Member } from '../../shared/models/group-details.data';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-create-group',
@@ -15,6 +17,7 @@ export class CreateGroup {
 
   private localStorageService = inject(LocalStorageService);
   private httpService = inject(HttpService);
+  private router = inject(Router);
 
   showSelectUser: boolean = false;
   members: any[] = [];
@@ -33,7 +36,7 @@ export class CreateGroup {
     const creator = this.groupForm!.get('creator') as FormControl;
     creator.setValue(user.name);
     console.log(this.groupForm!.value);
-    this.createGroup();
+    this.createGroup(user.name);
   }
 
   hideSelectUser(): void {
@@ -41,11 +44,11 @@ export class CreateGroup {
     this.members = [];
   }
 
-  createGroup() {
+  createGroup(creator: string) {
     const members: any[] = [];
 
     if (this.groupForm === undefined) {
-
+      // TODO handle error.
     } else {
       const memberControls = this.groupForm.get('members') as FormArray;
       memberControls.controls.forEach((member) => {
@@ -62,14 +65,13 @@ export class CreateGroup {
         },
         members: members,
       };
-      // this.httpService.createGroup(payload).subscribe({
-      //   next: (data) => {
-      //     this.localStorageService.setLinkToken(data.groupDetails.linkToken);
-      //     const user = data.members.find(({ name }) => name === this.creator.value);
-      //     this.localStorageService.setCurrentUser(user);
-      //     this.router.navigateByUrl(`group/${data.groupDetails.linkToken}`);
-      //   },
-      // });
+      this.httpService.createGroup(payload).subscribe({
+        next: (data: GroupDetailsData) => {
+          const user = data.members.find(({ name }) => name === creator) as Member;
+          this.localStorageService.saveGroup(data.groupDetails.linkToken, user)
+          this.router.navigateByUrl(`group/${data.groupDetails.linkToken}`);
+        },
+      });
       console.log(payload)
     }
 
