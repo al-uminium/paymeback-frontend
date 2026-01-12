@@ -1,3 +1,14 @@
-<div>
-  <app-group-form></app-group-form>
+<div class="p-4 w-full flex justify-center">
+  @if (!showSelectUser) {
+    <app-group-form
+      [inputGroupForm]="groupForm"
+      (groupFormCreated)="onGroupFormCreated($event)">
+    </app-group-form>
+  } @else {
+    <app-user-select
+      [members]="members"
+      (backBtnClicked)="hideSelectUser()"
+      (userSelected)="onCreatorSelected($event)">
+    </app-user-select>
+  }
 </div>
