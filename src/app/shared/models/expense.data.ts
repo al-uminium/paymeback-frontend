@@ -1,9 +1,9 @@
-export interface ExpenseData {
-  expense: Expense;
-  participants: Participants[]
+export interface IExpenseData {
+  expense: IExpense;
+  participants: IParticipants[];
 }
 
-export interface Expense {
+export interface IExpense {
   createdTs: string;
   date: string;
   expenseCurrency: string;
@@ -14,7 +14,7 @@ export interface Expense {
   totalCost: number;
 }
 
-export interface Participants {
+export interface IParticipants {
   amountOwed: number;
   id: string;
   isPayer: boolean;
@@ -29,7 +29,7 @@ export interface ExpensePayload {
   splitType: string;
   currency: string;
   date: Date;
-  participants: ParticipantPayload[]
+  participants: ParticipantPayload[];
 }
 
 export interface ParticipantPayload {

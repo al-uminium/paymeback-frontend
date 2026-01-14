@@ -1,0 +1,15 @@
+<div role="tablist" class="tab">
+  <a role="tab" class="tab tab-active">Expense</a>
+  <a role="tab" class="tab">Settlements</a>
+  <a role="tab" class="tab">History</a>
+  <a role="tab" class="tab">Settings</a>
+</div>
+
+<div>
+  @if (groupDetails() !== undefined) {
+    <div>Got Group Details</div>
+    <app-expense [groupDetails]="groupDetails()!.groupDetails"></app-expense>
+  } @else {
+    <div class="skeleton h-32 w-32"></div>
+  }
+</div>

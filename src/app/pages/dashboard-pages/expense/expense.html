@@ -1,0 +1,8 @@
+<div class="grid gap-4">
+  @for (expense of expenseList(); track expense) {
+    <app-expense-card
+      [expense]="expense.expense"
+      [participants]="expense.participants"
+    ></app-expense-card>
+  }
+</div>

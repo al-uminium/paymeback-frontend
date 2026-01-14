@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { Landing } from './pages/landing/landing';
 import { CreateGroup } from './pages/create-group/create-group';
-import { Dashboard } from './pages/dashboard/dashboard';
+import { Dashboard } from './pages/dashboard-pages/dashboard/dashboard';
 
 export const routes: Routes = [
   {
@@ -14,6 +14,6 @@ export const routes: Routes = [
   },
   {
     path: 'group/:token',
-    component: Dashboard
-  }
+    component: Dashboard,
+  },
 ];
