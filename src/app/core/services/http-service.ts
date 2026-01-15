@@ -4,6 +4,7 @@ import { environment } from '../../../environments/environment.development';
 import { GroupDetailsData } from '../../shared/models/group-details.data';
 import { Observable } from 'rxjs';
 import { IExpenseData, ExpensePayload } from '../../shared/models/expense.data';
+import { IAuditLogData } from '../../shared/models/audit-log.data';
 
 @Injectable({
   providedIn: 'root',
@@ -41,5 +42,9 @@ export class HttpService {
         'X-Actor-Id': actorId,
       },
     });
+  }
+
+  getGroupLogs(groupId: string): Observable<IAuditLogData[]> {
+    return this.http.get<IAuditLogData[]>(`${this.GROUP_API}/${groupId}/logs`);
   }
 }

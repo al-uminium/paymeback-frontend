@@ -1,14 +1,17 @@
-<div class="card md:w-96 w-full bg-base-200 grid grid-cols-2">
-  <div>
-    <h2 class="card-title">{{ expense()!.expenseName }}</h2>
-    <p class="text-xl text-gray-100">{{ expense()!.totalCost }}</p>
-    <div class="text-sm text-gray-500">paid by {{ expense()!.ownerName }}</div>
-  </div>
-  <div clas="flex gap-2">
-    @for (participant of participants(); track participant) {
-      @if (participant.id !== expense().ownerId) {
-        <div>{{ participant.name }}</div>
-      }
-    }
+<div class="card bg-base-200">
+  <div class="card-body">
+    <div class="flex justify-between items-center">
+      <h2 class="text-xl text-accent">{{ expense()!.expenseName }}</h2>
+      <div class="text-sm text-gray-600">{{ expense()!.date | date: 'mediumDate' }}</div>
+    </div>
+    <p class="text-xl text-gray-100">{{ expense()!.totalCost }} {{ expense()!.expenseCurrency }}</p>
+    <div class="text-sm text-gray-500">
+      paid by {{ expense()!.ownerName }} for {{ formatParticipants() }}
+    </div>
+    <!-- <div class="card-actions justify-end"> -->
+    <!--   <button class="btn btn-ghost"> -->
+    <!--     <lucide-icon [img]="EditIcon" size="18"></lucide-icon> -->
+    <!--   </button> -->
+    <!-- </div> -->
   </div>
 </div>

@@ -1,0 +1,13 @@
+@if ({ history: history() }; as data) {
+  @if (data.history.length > 0) {
+    <ul class="list">
+      @for (log of data.history; track log) {
+        <li class="list-row">
+          <div>{{ log.logTs | date: 'short' }}</div>
+          <div>{{ log.logMessage }}</div>
+          <div>- {{ log.actorName }}</div>
+        </li>
+      }
+    </ul>
+  }
+}

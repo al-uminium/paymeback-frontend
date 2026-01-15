@@ -1,8 +1,13 @@
 <div class="grid gap-4">
-  @for (expense of expenseList(); track expense) {
-    <app-expense-card
-      [expense]="expense.expense"
-      [participants]="expense.participants"
-    ></app-expense-card>
+  @if (expenseList().length == 0) {
+    <div>{{ groupDetails().name }} currently has no expenses yet.</div>
+  } @else {
+    <div class="justify-self-end"><button class="btn btn-primary w-fit">Add Expense</button></div>
+    @for (expense of expenseList(); track expense) {
+      <app-expense-card
+        [expense]="expense.expense"
+        [participants]="expense.participants"
+      ></app-expense-card>
+    }
   }
 </div>
