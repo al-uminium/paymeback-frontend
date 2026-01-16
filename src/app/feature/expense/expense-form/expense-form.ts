@@ -1,29 +1,46 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { HttpService } from '../../../core/services/http-service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CURRENCIES } from '../../../shared/models/currency';
+import { JsonPipe } from '@angular/common';
+import { AppStateService } from '../../../core/services/app-state-service';
 
 @Component({
   selector: 'app-expense-form',
-  imports: [],
+  imports: [ReactiveFormsModule, JsonPipe],
   templateUrl: './expense-form.html',
   styleUrl: './expense-form.css',
 })
 export class ExpenseForm implements OnInit {
   private httpService = inject(HttpService);
-  private route = inject(ActivatedRoute);
   private router = inject(Router);
+  readonly currencyList = CURRENCIES;
+  appState = inject(AppStateService);
 
   expenseForm!: FormGroup;
 
   ngOnInit(): void {
     this.expenseForm = new FormGroup({
       expenseName: new FormControl('', Validators.required),
+      payer: new FormControl('', Validators.required),
       totalCost: new FormControl('', Validators.required),
-      currency: new FormControl('', Validators.required),
+      currency: new FormControl(this.appState.groupDetails().defaultCurrency, Validators.required),
       date: new FormControl('', Validators.required),
       participants: new FormArray([]),
+      splitType: new FormControl('', Validators.required),
     });
+
+    const members = this.appState.sharedMembers();
+    for (const member of members) {
+      this.participants.push(
+        new FormGroup({
+          name: new FormControl(member.name),
+          id: new FormControl(member.id),
+          amt: new FormControl(''),
+        }),
+      );
+    }
   }
 
   // need to figure out a way to pass group ID, members and current user to this component

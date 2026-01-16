@@ -3,6 +3,7 @@ import { ExpenseCard } from '../../../feature/expense/expense-card/expense-card'
 import { GroupDetails } from '../../../shared/models/group-details.data';
 import { HttpService } from '../../../core/services/http-service';
 import { IExpense, IExpenseData } from '../../../shared/models/expense.data';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-expense',
@@ -15,18 +16,22 @@ export class Expense implements OnInit {
 
   private httpService = inject(HttpService);
 
+  private router = inject(Router);
+
   expenseList = signal<IExpenseData[]>([]);
 
   ngOnInit(): void {
-    console.log('init is running!');
     this.httpService.getGroupExpenses(this.groupDetails().id).subscribe({
       next: (data: IExpenseData[]) => {
         this.expenseList.set(data);
-        console.log(this.expenseList);
       },
       error: (err) => {
         console.debug(err);
       },
     });
+  }
+
+  routeToExpenseForm(): void {
+    this.router.navigate(['/expense']);
   }
 }

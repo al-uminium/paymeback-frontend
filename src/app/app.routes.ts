@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Landing } from './pages/landing/landing';
 import { CreateGroup } from './pages/create-group/create-group';
 import { Dashboard } from './pages/dashboard-pages/dashboard/dashboard';
+import { ExpenseForm } from './feature/expense/expense-form/expense-form';
 
 export const routes: Routes = [
   {
@@ -15,5 +16,9 @@ export const routes: Routes = [
   {
     path: 'group/:token',
     component: Dashboard,
+  },
+  {
+    path: 'expense',
+    component: ExpenseForm,
   },
 ];

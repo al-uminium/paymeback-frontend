@@ -1,5 +1,5 @@
 export interface GroupDetailsData {
-  groupDetails: GroupDetails
+  groupDetails: GroupDetails;
   members: Member[];
 }
 
@@ -25,4 +25,16 @@ export interface Member {
 export interface User {
   name: string;
   id: string;
+}
+
+export function emptyGroupDetails(): GroupDetails {
+  return {
+    createdTs: '',
+    defaultCurrency: '',
+    expiryTs: '',
+    id: '',
+    lastActivityTs: '',
+    linkToken: '',
+    name: '',
+  };
 }
