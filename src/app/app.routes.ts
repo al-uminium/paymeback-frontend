@@ -18,7 +18,7 @@ export const routes: Routes = [
     component: Dashboard,
   },
   {
-    path: 'expense',
+    path: 'group/:token/expense',
     component: ExpenseForm,
   },
 ];

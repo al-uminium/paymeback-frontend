@@ -12,13 +12,12 @@ import { HttpService } from './http-service';
   providedIn: 'root',
 })
 export class AppStateService {
-  private groupDetailsSignal = signal<GroupDetails>(emptyGroupDetails());
+  private groupDetailsSignal = signal<GroupDetails | undefined>(undefined);
   readonly groupDetails = this.groupDetailsSignal.asReadonly();
 
   private members = signal<Member[]>([]);
   readonly sharedMembers = this.members.asReadonly();
 
-  private route = inject(ActivatedRoute);
   private httpService = inject(HttpService);
 
   updateGroupDetails(groupDetails: GroupDetails): void {
@@ -29,10 +28,8 @@ export class AppStateService {
     this.members.set(members);
   }
 
-  getGroupDetailsAndMembers(): GroupDetailsData {
-    console.log(this.route.snapshot.paramMap);
-    const token = this.route.snapshot.paramMap.get('token') as string;
-    if (this.groupDetails().id === '') {
+  getGroupDetailsAndMembers(token: string): void {
+    if (this.groupDetails() === undefined) {
       this.httpService.getGroupDetails(token, true).subscribe({
         next: (data: GroupDetailsData) => {
           this.updateGroupDetails(data.groupDetails);
@@ -40,11 +37,5 @@ export class AppStateService {
         },
       });
     }
-    console.log('Checking if it actually updated');
-    console.log(this.groupDetails());
-    return {
-      groupDetails: this.groupDetails(),
-      members: this.members(),
-    };
   }
 }

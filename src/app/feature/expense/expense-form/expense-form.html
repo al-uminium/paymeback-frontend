@@ -1,23 +1,25 @@
-@if (appState.groupDetails().id === '') {
-  <div>Oops, you're not supposed to be here.</div>
-} @else {
-  <form [formGroup]="expenseForm">
-    <label class="floating-label">
-      <span>Expense name</span>
-      <input type="text" placeholder="The Last Supper" class="input" />
-    </label>
-    <label class="floating-label">
-      <span>Currency</span>
-      <select class="select">
-        <option disabled>Select a currency</option>
-        @for (currency of currencyList; track currency) {
-          @if (currency == appState.groupDetails().defaultCurrency) {
-            <option selected>{{ currency }}</option>
+@if ({ groupDetails: appState.groupDetails() }; as data) {
+  @if (data.groupDetails === undefined) {
+    <div>Oops, you're not supposed to be here.</div>
+  } @else {
+    <form [formGroup]="expenseForm">
+      <label class="floating-label">
+        <span>Expense name</span>
+        <input type="text" placeholder="The Last Supper" class="input" />
+      </label>
+      <label class="floating-label">
+        <span>Currency</span>
+        <select class="select">
+          <option disabled>Select a currency</option>
+          @for (currency of currencyList; track currency) {
+            @if (currency == data.groupDetails.defaultCurrency) {
+              <option selected>{{ currency }}</option>
+            }
+            <option>{{ currency }}</option>
           }
-          <option>{{ currency }}</option>
-        }
-      </select>
-    </label>
-  </form>
-  <div>{{ expenseForm.value | json }}</div>
+        </select>
+      </label>
+    </form>
+    <div>{{ expenseForm.value | json }}</div>
+  }
 }
