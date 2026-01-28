@@ -1,24 +1,115 @@
 @if ({ groupDetails: appState.groupDetails() }; as data) {
-  @if (data.groupDetails === undefined) {
+  @if (groupDetails === undefined) {
     <div>Oops, you're not supposed to be here.</div>
   } @else {
     <form [formGroup]="expenseForm">
       <label class="floating-label">
         <span>Expense name</span>
-        <input type="text" placeholder="The Last Supper" class="input" />
+        <input
+          type="text"
+          placeholder="The Last Supper"
+          class="input"
+          formControlName="expenseName"
+        />
       </label>
+
       <label class="floating-label">
         <span>Currency</span>
-        <select class="select">
+        <select class="select" formControlName="currency">
           <option disabled>Select a currency</option>
           @for (currency of currencyList; track currency) {
-            @if (currency == data.groupDetails.defaultCurrency) {
+            @if (currency == groupDetails.defaultCurrency) {
               <option selected>{{ currency }}</option>
             }
             <option>{{ currency }}</option>
           }
         </select>
       </label>
+
+      <label class="floating-label">
+        <span>Payer</span>
+        <select class="select" formControlName="payer">
+          <option disabled selected>Select the payer of this expense</option>
+          @for (member of members; track member) {
+            @if (getCurrentUser() === member.name) {
+              <option selected>{{ member.name }}</option>
+            }
+            <option>{{ member.name }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="floating-label">
+        <span>Total cost</span>
+        <input
+          type="text"
+          placeholder="Total cost of the meal"
+          class="input"
+          formControlName="totalCost"
+        />
+      </label>
+
+      <button class="btn btn-accent" onclick="participant_modal.showModal()">
+        Select participants
+      </button>
+      <dialog id="participant_modal" class="modal">
+        <div class="modal-box" formArrayName="participants">
+          <h3 class="text-lg font-bold">Who else was in this expense?</h3>
+          <button class="btn btn-accent" (click)="selectEveryone()">Select everyone!</button>
+          @for (member of participants.controls; track $index; let i = $index) {
+            @if (payer.value !== getMemberName(i)) {
+              <label class="label" [formGroupName]="i">
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-secondary"
+                  formControlName="isChecked"
+                />
+                {{ getMemberName(i) }}
+              </label>
+            }
+          }
+          <div class="modal-action">
+            <form method="dialog">
+              <button class="btn btn-primary" (click)="handleParticipantSubmit()">Submit</button>
+            </form>
+          </div>
+        </div>
+      </dialog>
+
+      <!-- show participant -->
+
+      @if (showSelectedParticipants) {
+        <fieldset class="fieldset bg-base-100 border-base-300 rounded-box w-fit border p-4">
+          <legend class="fieldset-legend">Splitting type</legend>
+          <label class="label">
+            <input
+              type="checkbox"
+              checked="checked"
+              class="toggle toggle-accent"
+              formControlName="splitType"
+            />
+            Split evenly
+          </label>
+        </fieldset>
+        <div formArrayName="participants">
+          @for (member of participants.controls; track $index; let i = $index) {
+            @if (getMemberIsChecked(i)) {
+              <div [formGroupName]="i">
+                <span>{{ getMemberName(i) }}</span>
+                @if (splitType.value === false) {
+                  <input
+                    type="text"
+                    placeholder="Enter amount owed"
+                    class="input"
+                    formControlName="amt"
+                  />
+                }
+              </div>
+            }
+          }
+        </div>
+        <button [disabled]="!expenseForm.valid" class="btn btn-primary">Create expense</button>
+      }
     </form>
     <div>{{ expenseForm.value | json }}</div>
   }

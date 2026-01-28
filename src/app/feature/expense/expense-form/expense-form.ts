@@ -5,31 +5,52 @@ import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } fr
 import { CURRENCIES } from '../../../shared/models/currency';
 import { JsonPipe } from '@angular/common';
 import { AppStateService } from '../../../core/services/app-state-service';
-import { GroupDetails } from '../../../shared/models/group-details.data';
+import { GroupDetails, Member } from '../../../shared/models/group-details.data';
+import { LocalStorageService } from '../../../core/services/local-storage-service';
+import { FormField } from '@angular/forms/signals';
 
 @Component({
   selector: 'app-expense-form',
-  imports: [ReactiveFormsModule, JsonPipe],
+  imports: [ReactiveFormsModule, JsonPipe, FormField],
   templateUrl: './expense-form.html',
   styleUrl: './expense-form.css',
 })
 export class ExpenseForm implements OnInit {
   private httpService = inject(HttpService);
   private router = inject(Router);
-  readonly currencyList = CURRENCIES;
   private route = inject(ActivatedRoute);
+
+  readonly currencyList = CURRENCIES;
+
   appState = inject(AppStateService);
+  localStorage = inject(LocalStorageService);
 
-  groupDetails: Signal<GroupDetails | undefined> = this.appState.groupDetails;
-
+  groupDetails!: GroupDetails;
+  members!: Member[];
   expenseForm!: FormGroup;
+  showSelectedParticipants: boolean = false;
 
   constructor() {
     const token = this.route.snapshot.paramMap.get('token') as string;
     const effectRef = effect(() => {
       const groupDetails = this.appState.groupDetails();
-      if (groupDetails) {
+      const members = this.appState.sharedMembers();
+      if (groupDetails && members) {
         this.initializeForm(groupDetails);
+        this.groupDetails = groupDetails;
+        this.members = members;
+        this.payer.patchValue(this.localStorage.getUserOfGroup(token));
+        this.splitType.valueChanges.subscribe((val) => {
+          for (const member of this.participants.controls) {
+            if (val === false) {
+              if (member.get('isChecked')!.value === true) {
+                member.get('amt')?.setValidators(Validators.required);
+              }
+            } else {
+              member.get('amt')?.clearValidators();
+            }
+          }
+        });
       } else {
         this.appState.getGroupDetailsAndMembers(token);
       }
@@ -61,25 +82,35 @@ export class ExpenseForm implements OnInit {
       payer: new FormControl('', Validators.required),
       totalCost: new FormControl('', Validators.required),
       currency: new FormControl(groupDetails.defaultCurrency, Validators.required),
-      date: new FormControl('', Validators.required),
+      date: new FormControl(''),
       participants: new FormArray([]),
-      splitType: new FormControl('', Validators.required),
+      splitType: new FormControl(true, Validators.required),
     });
 
     const members = this.appState.sharedMembers();
     for (const member of members) {
-      this.participants.push(
-        new FormGroup({
-          name: new FormControl(member.name),
-          id: new FormControl(member.id),
-          amt: new FormControl(''),
-        }),
-      );
+      const memberDetails = new FormGroup({
+        name: new FormControl(member.name),
+        id: new FormControl(member.id),
+        amt: new FormControl(''),
+        isChecked: new FormControl(false),
+      });
+      this.participants.push(memberDetails);
     }
+  }
+
+  getCurrentUser(): string {
+    const user = this.localStorage.getUserOfGroup(this.route.snapshot.paramMap.get('token')!);
+
+    return user ? user.name : '';
   }
 
   get expenseName() {
     return this.expenseForm.get('expenseName') as FormControl;
+  }
+
+  get payer() {
+    return this.expenseForm.get('payer') as FormControl;
   }
 
   get totalCost() {
@@ -96,6 +127,31 @@ export class ExpenseForm implements OnInit {
 
   get participants() {
     return this.expenseForm.get('participants') as FormArray;
+  }
+
+  get splitType() {
+    return this.expenseForm.get('splitType') as FormControl;
+  }
+
+  getMemberName(index: number): string {
+    const member = this.participants.at(index);
+    return member.get('name')!.value;
+  }
+
+  getMemberIsChecked(index: number): boolean {
+    const member = this.participants.at(index);
+    return member.get('isChecked')!.value;
+  }
+
+  selectEveryone(): void {
+    for (const participant of this.participants.controls) {
+      const isChecked = participant.get('isChecked') as FormControl;
+      isChecked.patchValue(true);
+    }
+  }
+
+  handleParticipantSubmit() {
+    this.showSelectedParticipants = true;
   }
 
   onSubmit() {}
