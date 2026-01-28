@@ -1,10 +1,11 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, Signal } from '@angular/core';
 import { HttpService } from '../../../core/services/http-service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CURRENCIES } from '../../../shared/models/currency';
 import { JsonPipe } from '@angular/common';
 import { AppStateService } from '../../../core/services/app-state-service';
+import { GroupDetails } from '../../../shared/models/group-details.data';
 
 @Component({
   selector: 'app-expense-form',
@@ -19,31 +20,47 @@ export class ExpenseForm implements OnInit {
   private route = inject(ActivatedRoute);
   appState = inject(AppStateService);
 
+  groupDetails: Signal<GroupDetails | undefined> = this.appState.groupDetails;
+
   expenseForm!: FormGroup;
 
-  ngOnInit(): void {
-    if (this.appState.groupDetails() !== undefined) {
-      console.log('ran this instead');
-      this.initializeForm();
-    } else {
-      const token = this.route.snapshot.paramMap.get('token') as string;
-      this.appState.getGroupDetailsAndMembers(token);
-      console.log('ran this');
-      computed(() => {
-        if (this.appState.groupDetails() !== undefined) {
-          this.initializeForm();
-        }
-      });
+  constructor() {
+    const token = this.route.snapshot.paramMap.get('token') as string;
+    const effectRef = effect(() => {
+      const groupDetails = this.appState.groupDetails();
+      if (groupDetails) {
+        this.initializeForm(groupDetails);
+      } else {
+        this.appState.getGroupDetailsAndMembers(token);
+      }
+    });
+
+    if (this.expenseForm) {
+      effectRef.destroy();
     }
   }
 
+  ngOnInit(): void {
+    // if (this.appState.groupDetails() !== undefined) {
+    //   console.log('ran this instead');
+    //   this.initializeForm(this.appState.groupDetails()!);
+    // } else {
+    //   const token = this.route.snapshot.paramMap.get('token') as string;
+    //   this.appState.getGroupDetailsAndMembers(token);
+    //   effect(() => {
+    //     this.initializeForm(this.appState.groupDetails()!);
+    //   });
+    //   console.log('ran this');
+    // }
+  }
+
   // need to figure out a way to pass group ID, members and current user to this component
-  initializeForm(): void {
+  initializeForm(groupDetails: GroupDetails): void {
     this.expenseForm = new FormGroup({
       expenseName: new FormControl('', Validators.required),
       payer: new FormControl('', Validators.required),
       totalCost: new FormControl('', Validators.required),
-      currency: new FormControl(this.appState.groupDetails()!.defaultCurrency, Validators.required),
+      currency: new FormControl(groupDetails.defaultCurrency, Validators.required),
       date: new FormControl('', Validators.required),
       participants: new FormArray([]),
       splitType: new FormControl('', Validators.required),
