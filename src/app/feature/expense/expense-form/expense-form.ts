@@ -8,6 +8,7 @@ import { AppStateService } from '../../../core/services/app-state-service';
 import { GroupDetails, Member } from '../../../shared/models/group-details.data';
 import { LocalStorageService } from '../../../core/services/local-storage-service';
 import { FormField } from '@angular/forms/signals';
+import { ExpensePayload, ParticipantPayload } from '../../../shared/models/expense.data';
 
 @Component({
   selector: 'app-expense-form',
@@ -156,5 +157,33 @@ export class ExpenseForm implements OnInit {
     this.showSelectedParticipants = true;
   }
 
-  onSubmit() {}
+  findUserByName(name: string): Member {
+    return this.members.find((member) => member.name === name)!;
+  }
+
+  onSubmit() {
+    const participants: ParticipantPayload[] = [];
+    const payer = this.findUserByName(this.payer.value);
+    for (const member of this.participants.controls) {
+      if (payer.id !== member.get('id')!.value) {
+        const participant: ParticipantPayload = {
+          participantId: member.get('id')!.value,
+          amountOwed: member.get('amt')?.value as number,
+        };
+        participants.push(participant);
+      }
+    }
+    const expensePayload: ExpensePayload = {
+      expenseName: this.expenseName.value,
+      groupId: this.groupDetails.id,
+      ownerId: payer.id!,
+      totalCost: this.totalCost.value as number,
+      splitType: this.splitType.value ? 'EVEN' : 'CUSTOM',
+      currency: this.currency.value,
+      date: this.date.value,
+      participants: participants,
+    };
+
+    console.log(expensePayload);
+  }
 }

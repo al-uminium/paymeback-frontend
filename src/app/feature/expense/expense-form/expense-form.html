@@ -128,7 +128,9 @@
                 }
               }
             </div>
-            <button [disabled]="!expenseForm.valid" class="btn btn-primary">Create expense</button>
+            <button [disabled]="!expenseForm.valid" class="btn btn-primary" (click)="onSubmit()">
+              Create expense
+            </button>
           }
         </form>
       </fieldset>

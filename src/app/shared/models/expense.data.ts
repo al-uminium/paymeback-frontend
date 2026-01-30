@@ -34,5 +34,5 @@ export interface ExpensePayload {
 
 export interface ParticipantPayload {
   participantId: string;
-  amountOwed: string | null;
+  amountOwed: number | null;
 }
