@@ -26,7 +26,7 @@ export interface ExpensePayload {
   groupId: string;
   ownerId: string;
   totalCost: number;
-  splitType: string;
+  splitType: 'EVEN' | 'CUSTOM';
   currency: string;
   date: Date;
   participants: ParticipantPayload[];
@@ -34,5 +34,5 @@ export interface ExpensePayload {
 
 export interface ParticipantPayload {
   participantId: string;
-  amountOwed: string;
+  amountOwed: string | null;
 }

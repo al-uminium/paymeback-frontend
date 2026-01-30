@@ -11,7 +11,7 @@ import { FormField } from '@angular/forms/signals';
 
 @Component({
   selector: 'app-expense-form',
-  imports: [ReactiveFormsModule, JsonPipe, FormField],
+  imports: [ReactiveFormsModule, JsonPipe],
   templateUrl: './expense-form.html',
   styleUrl: './expense-form.css',
 })
@@ -39,7 +39,7 @@ export class ExpenseForm implements OnInit {
         this.initializeForm(groupDetails);
         this.groupDetails = groupDetails;
         this.members = members;
-        this.payer.patchValue(this.localStorage.getUserOfGroup(token));
+        this.payer.patchValue(this.localStorage.getUserOfGroup(token)?.name);
         this.splitType.valueChanges.subscribe((val) => {
           for (const member of this.participants.controls) {
             if (val === false) {
@@ -82,7 +82,7 @@ export class ExpenseForm implements OnInit {
       payer: new FormControl('', Validators.required),
       totalCost: new FormControl('', Validators.required),
       currency: new FormControl(groupDetails.defaultCurrency, Validators.required),
-      date: new FormControl(''),
+      date: new FormControl(new Date().toISOString().substring(0, 10), Validators.required),
       participants: new FormArray([]),
       splitType: new FormControl(true, Validators.required),
     });
@@ -145,8 +145,10 @@ export class ExpenseForm implements OnInit {
 
   selectEveryone(): void {
     for (const participant of this.participants.controls) {
-      const isChecked = participant.get('isChecked') as FormControl;
-      isChecked.patchValue(true);
+      if (participant.get('name')!.value !== this.payer.value) {
+        const isChecked = participant.get('isChecked') as FormControl;
+        isChecked.patchValue(true);
+      }
     }
   }
 

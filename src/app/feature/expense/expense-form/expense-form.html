@@ -1,116 +1,138 @@
-@if ({ groupDetails: appState.groupDetails() }; as data) {
-  @if (groupDetails === undefined) {
-    <div>Oops, you're not supposed to be here.</div>
-  } @else {
-    <form [formGroup]="expenseForm">
-      <label class="floating-label">
-        <span>Expense name</span>
-        <input
-          type="text"
-          placeholder="The Last Supper"
-          class="input"
-          formControlName="expenseName"
-        />
-      </label>
+<div class="grid justify-items-center">
+  @if ({ groupDetails: appState.groupDetails() }; as data) {
+    @if (groupDetails === undefined) {
+      <div>Oops, you're not supposed to be here.</div>
+    } @else {
+      <fieldset class="fieldset border-base-200 rounded-box border p-4">
+        <legend class="fieldset-legend text-xl">Expense details</legend>
+        <form [formGroup]="expenseForm" class="grid gap-6">
+          <div class="flex flex-col md:flex-row gap-4">
+            <label class="floating-label">
+              <span>Expense name</span>
+              <input
+                type="text"
+                placeholder="The Last Supper"
+                class="input"
+                formControlName="expenseName"
+              />
+            </label>
 
-      <label class="floating-label">
-        <span>Currency</span>
-        <select class="select" formControlName="currency">
-          <option disabled>Select a currency</option>
-          @for (currency of currencyList; track currency) {
-            @if (currency == groupDetails.defaultCurrency) {
-              <option selected>{{ currency }}</option>
-            }
-            <option>{{ currency }}</option>
-          }
-        </select>
-      </label>
-
-      <label class="floating-label">
-        <span>Payer</span>
-        <select class="select" formControlName="payer">
-          <option disabled selected>Select the payer of this expense</option>
-          @for (member of members; track member) {
-            @if (getCurrentUser() === member.name) {
-              <option selected>{{ member.name }}</option>
-            }
-            <option>{{ member.name }}</option>
-          }
-        </select>
-      </label>
-
-      <label class="floating-label">
-        <span>Total cost</span>
-        <input
-          type="text"
-          placeholder="Total cost of the meal"
-          class="input"
-          formControlName="totalCost"
-        />
-      </label>
-
-      <button class="btn btn-accent" onclick="participant_modal.showModal()">
-        Select participants
-      </button>
-      <dialog id="participant_modal" class="modal">
-        <div class="modal-box" formArrayName="participants">
-          <h3 class="text-lg font-bold">Who else was in this expense?</h3>
-          <button class="btn btn-accent" (click)="selectEveryone()">Select everyone!</button>
-          @for (member of participants.controls; track $index; let i = $index) {
-            @if (payer.value !== getMemberName(i)) {
-              <label class="label" [formGroupName]="i">
-                <input
-                  type="checkbox"
-                  class="checkbox checkbox-secondary"
-                  formControlName="isChecked"
-                />
-                {{ getMemberName(i) }}
-              </label>
-            }
-          }
-          <div class="modal-action">
-            <form method="dialog">
-              <button class="btn btn-primary" (click)="handleParticipantSubmit()">Submit</button>
-            </form>
-          </div>
-        </div>
-      </dialog>
-
-      <!-- show participant -->
-
-      @if (showSelectedParticipants) {
-        <fieldset class="fieldset bg-base-100 border-base-300 rounded-box w-fit border p-4">
-          <legend class="fieldset-legend">Splitting type</legend>
-          <label class="label">
-            <input
-              type="checkbox"
-              checked="checked"
-              class="toggle toggle-accent"
-              formControlName="splitType"
-            />
-            Split evenly
-          </label>
-        </fieldset>
-        <div formArrayName="participants">
-          @for (member of participants.controls; track $index; let i = $index) {
-            @if (getMemberIsChecked(i)) {
-              <div [formGroupName]="i">
-                <span>{{ getMemberName(i) }}</span>
-                @if (splitType.value === false) {
+            <div class="join">
+              <div>
+                <label class="floating-label">
+                  <span>Total cost</span>
                   <input
                     type="text"
-                    placeholder="Enter amount owed"
-                    class="input"
-                    formControlName="amt"
+                    placeholder="121.50"
+                    class="input w-40"
+                    formControlName="totalCost"
                   />
+                </label>
+              </div>
+              <select class="select join-item w-20" formControlName="currency">
+                <option disabled>Select a currency</option>
+                @for (currency of currencyList; track currency) {
+                  @if (currency == groupDetails.defaultCurrency) {
+                    <option selected>{{ currency }}</option>
+                  } @else {
+                    <option>{{ currency }}</option>
+                  }
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="flex flex-col md:flex-row gap-4 justify-between">
+            <label class="floating-label">
+              <span>Payer</span>
+              <select class="select" formControlName="payer">
+                <option disabled selected>Select the payer of this expense</option>
+                @for (member of members; track member) {
+                  @if (getCurrentUser() === member.name) {
+                    <option selected>{{ member.name }}</option>
+                  } @else {
+                    <option>{{ member.name }}</option>
+                  }
+                }
+              </select>
+            </label>
+            <label class="floating-label">
+              <span>Expense date</span>
+              <input type="date" class="input" formControlName="date" />
+            </label>
+          </div>
+
+          <button class="btn btn-accent" onclick="participant_modal.showModal()">
+            Select participants
+          </button>
+          <dialog id="participant_modal" class="modal">
+            <div class="modal-box" formArrayName="participants">
+              <div class="flex justify-between items-center pb-4">
+                <h3 class="text-lg font-bold">Who else was in this expense?</h3>
+                <button class="btn btn-ghost" (click)="selectEveryone()">Select all</button>
+              </div>
+              <div class="flex flex-col gap-4">
+                @for (member of participants.controls; track $index; let i = $index) {
+                  @if (payer.value !== getMemberName(i)) {
+                    <label class="label text-base" [formGroupName]="i">
+                      <input
+                        type="checkbox"
+                        class="checkbox checkbox-secondary"
+                        formControlName="isChecked"
+                      />
+                      {{ getMemberName(i) }}
+                    </label>
+                  }
                 }
               </div>
-            }
+              <form method="dialog" class="modal-action">
+                <button class="btn btn-primary" (click)="handleParticipantSubmit()">Submit</button>
+              </form>
+            </div>
+            <!-- below is needed to close modal on click outside -->
+            <form method="dialog" class="modal-backdrop">
+              <button></button>
+            </form>
+          </dialog>
+
+          <!-- show participant -->
+
+          @if (showSelectedParticipants) {
+            <div class="flex justify-between items-center">
+              <h4 class="text-xl font-bold">How much do they owe you?</h4>
+              <fieldset class="fieldset bg-base-100 border-base-300 rounded-box w-fit border p-4">
+                <legend class="fieldset-legend">Splitting option</legend>
+                <label class="label">
+                  <input
+                    type="checkbox"
+                    checked="checked"
+                    class="toggle toggle-accent"
+                    formControlName="splitType"
+                  />
+                  Split evenly
+                </label>
+              </fieldset>
+            </div>
+            <div formArrayName="participants" class="text-base grid gap-4">
+              @for (member of participants.controls; track $index; let i = $index) {
+                @if (getMemberIsChecked(i)) {
+                  <div [formGroupName]="i" class="flex justify-between items-center h-10">
+                    <span>{{ getMemberName(i) }}</span>
+                    @if (splitType.value === false) {
+                      <label class="input w-52">
+                        <input type="text" placeholder="Enter amount owed" formControlName="amt" />
+                        <span class="label">{{ currency.value }}</span>
+                      </label>
+                    }
+                  </div>
+                }
+              }
+            </div>
+            <button [disabled]="!expenseForm.valid" class="btn btn-primary">Create expense</button>
           }
-        </div>
-        <button [disabled]="!expenseForm.valid" class="btn btn-primary">Create expense</button>
-      }
-    </form>
-    <div>{{ expenseForm.value | json }}</div>
+        </form>
+      </fieldset>
+      <div>{{ expenseForm.value | json }}</div>
+    }
   }
-}
+</div>
