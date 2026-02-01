@@ -5,10 +5,16 @@ import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } fr
 import { CURRENCIES } from '../../../shared/models/currency';
 import { JsonPipe } from '@angular/common';
 import { AppStateService } from '../../../core/services/app-state-service';
-import { GroupDetails, Member } from '../../../shared/models/group-details.data';
+import { GroupDetails, Member, User } from '../../../shared/models/group-details.data';
 import { LocalStorageService } from '../../../core/services/local-storage-service';
 import { FormField } from '@angular/forms/signals';
-import { ExpensePayload, ParticipantPayload } from '../../../shared/models/expense.data';
+import {
+  ExpensePayload,
+  IExpenseData,
+  ParticipantPayload,
+} from '../../../shared/models/expense.data';
+import { IApiError } from '../../../shared/models/error-data';
+import { UserSelect } from '../../group/user-select/user-select';
 
 @Component({
   selector: 'app-expense-form',
@@ -20,27 +26,35 @@ export class ExpenseForm implements OnInit {
   private httpService = inject(HttpService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private token!: string;
 
   readonly currencyList = CURRENCIES;
 
   appState = inject(AppStateService);
   localStorage = inject(LocalStorageService);
 
+  currentUser: User | undefined = undefined;
   groupDetails!: GroupDetails;
   members!: Member[];
   expenseForm!: FormGroup;
   showSelectedParticipants: boolean = false;
 
   constructor() {
-    const token = this.route.snapshot.paramMap.get('token') as string;
+    this.token = this.route.snapshot.paramMap.get('token') as string;
     const effectRef = effect(() => {
       const groupDetails = this.appState.groupDetails();
       const members = this.appState.sharedMembers();
+      const storedUser = this.localStorage.getUserOfGroup(this.token);
+      if (storedUser === undefined) {
+        this.navigateToDashboard();
+      } else {
+        this.currentUser = storedUser;
+      }
       if (groupDetails && members) {
         this.initializeForm(groupDetails);
         this.groupDetails = groupDetails;
         this.members = members;
-        this.payer.patchValue(this.localStorage.getUserOfGroup(token)?.name);
+        this.payer.patchValue(this.currentUser?.name);
         this.splitType.valueChanges.subscribe((val) => {
           for (const member of this.participants.controls) {
             if (val === false) {
@@ -53,7 +67,7 @@ export class ExpenseForm implements OnInit {
           }
         });
       } else {
-        this.appState.getGroupDetailsAndMembers(token);
+        this.appState.getGroupDetailsAndMembers(this.token);
       }
     });
 
@@ -76,7 +90,6 @@ export class ExpenseForm implements OnInit {
     // }
   }
 
-  // need to figure out a way to pass group ID, members and current user to this component
   initializeForm(groupDetails: GroupDetails): void {
     this.expenseForm = new FormGroup({
       expenseName: new FormControl('', Validators.required),
@@ -101,7 +114,7 @@ export class ExpenseForm implements OnInit {
   }
 
   getCurrentUser(): string {
-    const user = this.localStorage.getUserOfGroup(this.route.snapshot.paramMap.get('token')!);
+    const user = this.localStorage.getUserOfGroup(this.token);
 
     return user ? user.name : '';
   }
@@ -161,29 +174,46 @@ export class ExpenseForm implements OnInit {
     return this.members.find((member) => member.name === name)!;
   }
 
+  navigateToDashboard() {
+    this.router.navigate(['..'], { relativeTo: this.route });
+  }
+
   onSubmit() {
     const participants: ParticipantPayload[] = [];
     const payer = this.findUserByName(this.payer.value);
-    for (const member of this.participants.controls) {
-      if (payer.id !== member.get('id')!.value) {
-        const participant: ParticipantPayload = {
-          participantId: member.get('id')!.value,
-          amountOwed: member.get('amt')?.value as number,
-        };
-        participants.push(participant);
-      }
-    }
-    const expensePayload: ExpensePayload = {
-      expenseName: this.expenseName.value,
-      groupId: this.groupDetails.id,
-      ownerId: payer.id!,
-      totalCost: this.totalCost.value as number,
-      splitType: this.splitType.value ? 'EVEN' : 'CUSTOM',
-      currency: this.currency.value,
-      date: this.date.value,
-      participants: participants,
-    };
 
-    console.log(expensePayload);
+    if (this.currentUser) {
+      for (const member of this.participants.controls) {
+        if (payer.id !== member.get('id')!.value) {
+          const participant: ParticipantPayload = {
+            participantId: member.get('id')!.value,
+            amountOwed: member.get('amt')?.value as number,
+          };
+          participants.push(participant);
+        }
+      }
+      const expensePayload: ExpensePayload = {
+        expenseName: this.expenseName.value,
+        groupId: this.groupDetails.id,
+        ownerId: payer.id!,
+        totalCost: this.totalCost.value as number,
+        splitType: this.splitType.value ? 'EVEN' : 'CUSTOM',
+        currency: this.currency.value,
+        date: this.date.value,
+        participants: participants,
+      };
+
+      this.httpService.createExpense(expensePayload, this.currentUser.id).subscribe({
+        next: (data: IExpenseData) => {
+          console.log(data);
+          this.navigateToDashboard();
+        },
+        error: (err: IApiError) => {
+          console.debug(err);
+        },
+      });
+    } else {
+      console.debug('No actor ID found.');
+    }
   }
 }

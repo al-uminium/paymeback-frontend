@@ -5,6 +5,7 @@ import { GroupDetailsData } from '../../shared/models/group-details.data';
 import { Observable } from 'rxjs';
 import { IExpenseData, ExpensePayload } from '../../shared/models/expense.data';
 import { IAuditLogData } from '../../shared/models/audit-log.data';
+import { IApiError } from '../../shared/models/error-data';
 
 @Injectable({
   providedIn: 'root',
@@ -31,14 +32,9 @@ export class HttpService {
     return this.http.get<IExpenseData[]>(`${this.GROUP_API}/${groupId}/expenses`);
   }
 
-  createExpense(
-    payload: ExpensePayload,
-    groupId: string,
-    actorId: string,
-  ): Observable<IExpenseData> {
+  createExpense(payload: ExpensePayload, actorId: string): Observable<IExpenseData> {
     return this.http.post<IExpenseData>(`${this.EXPENSE_API}/create`, payload, {
       headers: {
-        'X-Group-Id': groupId,
         'X-Actor-Id': actorId,
       },
     });
