@@ -10,6 +10,7 @@ import { Member } from '../../../shared/models/group-details.data';
 export class UserSelect {
   //takes in Member[] or {name: name} array
   members = input<any[]>();
+  hideBackBtn = input<boolean>(false);
   userSelected = output();
   backBtnClicked = output();
 

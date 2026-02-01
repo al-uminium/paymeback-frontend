@@ -2,13 +2,21 @@
 <div class="grid gap-4">
   @for (member of members(); track member) {
     <div>
-      <input type="radio" [id]="member.name" name="currentUser" value class="radio radio-accent" (click)="handleUserChoice(member)" />
+      <input
+        type="radio"
+        [id]="member.name"
+        name="currentUser"
+        value
+        class="radio radio-accent"
+        (click)="handleUserChoice(member)"
+      />
       <label class="pl-4" [for]="member.name">{{ member.name }}</label>
     </div>
   }
   <div class="flex md:flex-row flex-col justify-between gap-4">
-    <button class="btn btn-soft" (click)="onBackClick()">Back</button>
+    @if (!hideBackBtn()) {
+      <button class="btn btn-soft" (click)="onBackClick()">Back</button>
+    }
     <button class="btn btn-primary" (click)="onSubmit()">That's me!</button>
   </div>
- </div>
-
+</div>

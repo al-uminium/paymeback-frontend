@@ -7,24 +7,28 @@ import { LocalStorageData } from '../../shared/models/local-storage.data';
 })
 export class LocalStorageService {
   setLinkToken(token: string) {
-    localStorage.setItem("linkToken", token)
+    localStorage.setItem('linkToken', token);
   }
 
   setCurrentUser(user: any) {
-    localStorage.setItem("user", user)
+    localStorage.setItem('user', user);
   }
 
   saveGroup(token: string, user: Member) {
-    const group = { [token]: { "name": user.name, "id": user.id } }
+    const group = { [token]: { name: user.name, id: user.id } };
     const groupString = JSON.stringify(group);
-    localStorage.setItem("groups", groupString)
+    localStorage.setItem('groups', groupString);
+  }
+
+  private getLocalStorageData(): LocalStorageData | null {
+    const string = localStorage.getItem('groups');
+    return string ? (JSON.parse(string) as LocalStorageData) : null;
   }
 
   getUserOfGroup(token: string): User | undefined {
-    const groupString = localStorage.getItem("groups")
-    if (groupString !== null) {
-      const groupJson = JSON.parse(groupString) as LocalStorageData;
-      return groupJson[token];
+    const group = this.getLocalStorageData();
+    if (group !== null) {
+      return group[token];
     } else {
       return undefined;
     }
